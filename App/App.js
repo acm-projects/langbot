@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { Dialogflow_V2 } from 'react-native-dialogflow';
+import { NativeAppEventEmitter } from 'react-native';
 
 import { dialogflowConfig } from './env';
 
@@ -16,7 +17,7 @@ class App extends Component {
     messages: [
       {
         _id: 1,
-        text: `Hi! I am the LangBot.\n\nYou can talk to me in Spanish!`,
+        text: `Hi! I am the FAQ bot 🤖 from Jscrambler.\n\nHow may I help you with today?`,
         createdAt: new Date(),
         user: BOT_USER
       }
