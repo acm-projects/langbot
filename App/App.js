@@ -8,8 +8,8 @@ import { dialogflowConfig } from './env';
 
 const BOT_USER = {
   _id: 2,
-  name: 'FAQ Bot',
-  avatar: 'https://i.imgur.com/7k12EPD.png'
+  name: 'LangBot',
+  avatar: 'https://imgur.com/jB2SYzV'
 };
 
 class App extends Component {
@@ -17,7 +17,7 @@ class App extends Component {
     messages: [
       {
         _id: 1,
-        text: `Hi! I am the FAQ bot 🤖 from Jscrambler.\n\nHow may I help you with today?`,
+        text: `Hi! I am the LangBot.\n\nSpeak to me in Spanish`,
         createdAt: new Date(),
         user: BOT_USER
       }
