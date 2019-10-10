@@ -6,7 +6,19 @@ import { GiftedChat } from 'react-native-gifted-chat';
 import { Dialogflow_V2 } from 'react-native-dialogflow';
 import { NativeAppEventEmitter } from 'react-native';
 
-import { dialogflowConfig } from './env';
+import { dialogflowConfig ,  firebaseConfig  } from './env';
+
+const firebase = require("firebase");
+require("firebase/firestore");
+
+firebase.initializeApp(firebaseConfig);
+
+var db = firebase.firestore();
+// from tutorial
+
+
+console.log("ran firebase stuff");
+
 
 /*
 The user object is the user sending messages — in our case, the bot. 
@@ -62,6 +74,7 @@ an onSend prop that is a callback function used when sending the message, and th
     }));
 
     let message = messages[0].text;
+    this.saveMessage(message);
     /*
     The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
     It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -87,6 +100,26 @@ an onSend prop that is a callback function used when sending the message, and th
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, [msg])
     }));
+  }
+
+  saveMessage(msg){
+    db.collection("users").add({
+      messages: msg
+    })
+    .then(function(docRef) {
+      console.log("Document written with ID: ", docRef.id);
+    })
+    .catch(function(error) {
+      console.error("Error adding document: ", error);
+    });
+    
+    // test writing to database
+    //let testDoc = db.collection("testCollection").doc("testDoc");
+    /*let setTest = testDoc.set({
+      firstName: "first",
+      lastName: "last",
+      number: 42
+    });*/
   }
 
   render() {
