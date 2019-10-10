@@ -8,13 +8,23 @@ import { NativeAppEventEmitter } from 'react-native';
 
 import { dialogflowConfig, firebaseConfig } from './env';
 
-//import Firebase from "firebase";
-import * as firebase from "firebase";
+const firebase = require("firebase");
+require("firebase/firestore");
 
 firebase.initializeApp(firebaseConfig);
 
-firebase.database().ref("testCollection/testDoc").set({
-  name: "this is a name"
+var db = firebase.firestore();
+// from tutorial
+db.collection("testCollection").add({
+  first: "Ada",
+  last: "Lovelace",
+  born: 1815
+})
+.then(function(docRef) {
+  console.log("Document written with ID: ", docRef.id);
+})
+.catch(function(error) {
+  console.error("Error adding document: ", error);
 });
 
 // test writing to database
