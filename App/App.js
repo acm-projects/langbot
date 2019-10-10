@@ -1,4 +1,5 @@
 //Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
+//Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
 
 import React, { Component } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -8,21 +9,21 @@ import { NativeAppEventEmitter } from 'react-native';
 
 import { dialogflowConfig ,  firebaseConfig  } from './env';
 
+/*
+Initializing firebase
+*/
+// Firebase App (the core Firebase SDK) is always required and must be listed before other Firebase SDKs
 const firebase = require("firebase");
+// Add the Firebase products that you want to use
 require("firebase/firestore");
-
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
+//Initialize an instance of Cloud Firestore
 var db = firebase.firestore();
-// from tutorial
-
-
-console.log("ran firebase stuff");
-
 
 /*
 The user object is the user sending messages — in our case, the bot. 
-//It is defined with properties like username, its unique ID, and an avatar. 
+It is defined with properties like username, its unique ID, and an avatar. 
 The react-native-gifted-chat automatically adds a circle avatar in the UI.
 */
 const BOT_USER = {
@@ -74,7 +75,7 @@ an onSend prop that is a callback function used when sending the message, and th
     }));
 
     let message = messages[0].text;
-    this.saveMessage(message);
+    this.saveMessage(messages);
     /*
     The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
     It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -96,7 +97,7 @@ an onSend prop that is a callback function used when sending the message, and th
       createdAt: new Date(),
       user: BOT_USER
     };
-
+    this.saveMessage(msg);
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, [msg])
     }));
@@ -112,14 +113,6 @@ an onSend prop that is a callback function used when sending the message, and th
     .catch(function(error) {
       console.error("Error adding document: ", error);
     });
-    
-    // test writing to database
-    //let testDoc = db.collection("testCollection").doc("testDoc");
-    /*let setTest = testDoc.set({
-      firstName: "first",
-      lastName: "last",
-      number: 42
-    });*/
   }
 
   render() {
