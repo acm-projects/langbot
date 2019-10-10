@@ -6,7 +6,26 @@ import { GiftedChat } from 'react-native-gifted-chat';
 import { Dialogflow_V2 } from 'react-native-dialogflow';
 import { NativeAppEventEmitter } from 'react-native';
 
-import { dialogflowConfig } from './env';
+import { dialogflowConfig, firebaseConfig } from './env';
+
+//import Firebase from "firebase";
+import * as firebase from "firebase";
+
+firebase.initializeApp(firebaseConfig);
+
+firebase.database().ref("testCollection/testDoc").set({
+  name: "this is a name"
+});
+
+// test writing to database
+//let testDoc = db.collection("testCollection").doc("testDoc");
+/*let setTest = testDoc.set({
+  firstName: "first",
+  lastName: "last",
+  number: 42
+});*/
+
+console.log("ran firebase stuff");
 
 /*
 The user object is the user sending messages — in our case, the bot. 

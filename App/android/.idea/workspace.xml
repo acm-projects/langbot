@@ -5,7 +5,11 @@
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="No Filters" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23ee78c6-c2c5-441e-84af-1278fbe9f042" name="Default Changelist" comment="" />
+    <list default="true" id="23ee78c6-c2c5-441e-84af-1278fbe9f042" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../package.json" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,9 +42,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane" />
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -142,7 +146,7 @@
     <layout>
       <window_info id="Captures" order="0" side_tool="true" weight="0.25" />
       <window_info id="Capture Tool" order="1" />
-      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.33432835" />
+      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.32828283" />
       <window_info id="Structure" order="3" side_tool="true" />
       <window_info id="Favorites" order="4" side_tool="true" />
       <window_info id="Build Variants" order="5" side_tool="true" />
@@ -152,7 +156,7 @@
       <window_info anchor="bottom" id="Logcat" order="0" sideWeight="0.7761194" weight="0.80981594" />
       <window_info anchor="bottom" id="TODO" order="1" />
       <window_info anchor="bottom" id="Terminal" order="2" sideWeight="0.49925372" weight="0.3297546" />
-      <window_info active="true" anchor="bottom" id="Event Log" order="3" sideWeight="0.5052239" side_tool="true" visible="true" weight="0.3297546" />
+      <window_info active="true" anchor="bottom" id="Event Log" order="3" sideWeight="0.5052239" side_tool="true" visible="true" weight="0.31851852" />
       <window_info anchor="bottom" id="Version Control" order="4" />
       <window_info anchor="bottom" id="Build" order="5" sideWeight="0.49477613" visible="true" weight="0.3297546" />
       <window_info anchor="bottom" id="Android Profiler" order="6" show_stripe_button="false" />
