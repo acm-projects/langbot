@@ -65,10 +65,10 @@ class App extends Component {
   }
 
 
-/*
-The GiftedChat component can take props like messages from our component's initial state, 
-an onSend prop that is a callback function used when sending the message, and the user ID of the message.
-*/
+  /*
+  The GiftedChat component can take props like messages from our component's initial state, 
+  an onSend prop that is a callback function used when sending the message, and the user ID of the message.
+  */
   onSend(messages = []) {
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages)
@@ -79,7 +79,7 @@ an onSend prop that is a callback function used when sending the message, and th
     /*
     The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
     It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
-	*/
+	  */
     Dialogflow_V2.requestQuery(
       message,
       result => this.handleGoogleResponse(result),
@@ -101,8 +101,14 @@ an onSend prop that is a callback function used when sending the message, and th
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, [msg])
     }));
+    if (text.includes("datos")){
+      this.getMessage();
+    }
   }
 
+  /*
+  Add data
+  */
   saveMessage(msg){
     db.collection("users").add({
       messages: msg
@@ -112,6 +118,22 @@ an onSend prop that is a callback function used when sending the message, and th
     })
     .catch(function(error) {
       console.error("Error adding document: ", error);
+    });
+  }
+
+  /*
+  Read data
+  */
+  getMessage(){
+    db.collection('users').get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        console.log(doc.id, '=>', doc.data());
+        this.sendBotResponse(doc.id);
+      });
+    })
+    .catch((err) => {
+      console.log('Error getting documents', err);
     });
   }
 
