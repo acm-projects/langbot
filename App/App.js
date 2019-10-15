@@ -1,17 +1,26 @@
-//Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
-//Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
+/*
+Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
+Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
+Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+*/
 
+//React Dependencies
 import React, { Component } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+//Gifted Chat Dependency
 import { GiftedChat } from 'react-native-gifted-chat';
+//Dialog Flow Dependencies
 import { Dialogflow_V2 } from 'react-native-dialogflow';
 import { NativeAppEventEmitter } from 'react-native';
-
+//Configurations
 import { dialogflowConfig ,  firebaseConfig  } from './env';
-
+//Yellow Box Dialog Message Dependencies
 import { YellowBox } from 'react-native';
 import _ from 'lodash';
 
+/*
+Handled timer console message and dialog box
+*/
 YellowBox.ignoreWarnings(['Setting a timer']);
 const _console = _.clone(console);
 console.warn = message => {
