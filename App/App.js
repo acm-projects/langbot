@@ -5,11 +5,13 @@ import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import React, { Component } from "react";
 import Chat from "./views/Chat";
+import Languages from "./views/Languages";
 
 const navigate = createStackNavigator(
 	{
 		Chat: Chat,
-		Settings: Settings
+		Settings: Settings,
+		Languages: Languages
 	},
 	{
 		initialRouteName: "Chat"
