@@ -95,7 +95,7 @@ class App extends Component {
     }));
 
     let message = messages[0].text;
-    this.saveMessage(messages);
+    this.saveMessage(messages[0]);
     /*
     The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
     It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -119,7 +119,7 @@ class App extends Component {
     };
     this.saveMessage(msg);
     this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, [msg])
+      messages: GiftedChat.append(previousState.messages, msg)
     }));
     if (text.includes("datos")){
       this.getMessage();
@@ -130,7 +130,7 @@ class App extends Component {
   Add data
   */
   saveMessage(msg){
-    db.collection("users").add({
+    db.collection("usersTesting").add({
       messages: msg
     })
     .then(function(docRef) {
@@ -145,7 +145,7 @@ class App extends Component {
   Read data
   */
   getMessage(){
-    db.collection('users').get()
+    db.collection('usersTesting').get()
     .then((snapshot) => {
       snapshot.forEach((doc) => {
         console.log(doc.id, '=>', doc.data());
