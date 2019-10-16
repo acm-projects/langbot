@@ -95,7 +95,6 @@ class App extends Component {
     }));
 
     let message = messages[0].text;
-    this.saveMessage(messages[0]);
     /*
     The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
     It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -105,6 +104,13 @@ class App extends Component {
       result => this.handleGoogleResponse(result),
       error => console.log(error)
     );
+    if (message.includes("datos")){
+      this.saveMessage(messages[0]);
+      this.getMessage();
+    }
+    else{
+      this.saveMessage(messages[0]);
+    }
   }
 
   /*
@@ -117,20 +123,17 @@ class App extends Component {
       createdAt: new Date(),
       user: BOT_USER
     };
-    this.saveMessage(msg);
     this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, msg)
+      messages: GiftedChat.append(previousState.messages, [msg])
     }));
-    if (text.includes("datos")){
-      this.getMessage();
-    }
+    this.saveMessage(msg);
   }
-
+  
   /*
   Add data
   */
   saveMessage(msg){
-    db.collection("usersTesting").add({
+    db.collection("usersMessages").add({
       messages: msg
     })
     .then(function(docRef) {
@@ -145,16 +148,22 @@ class App extends Component {
   Read data
   */
   getMessage(){
-    db.collection('usersTesting').get()
+    db.collection('usersMessages').get()
     .then((snapshot) => {
       snapshot.forEach((doc) => {
-        console.log(doc.id, '=>', doc.data());
-        this.sendBotResponse(doc.id);
+        this.parseData(doc.data());
       });
     })
     .catch((err) => {
       console.log('Error getting documents', err);
     });
+  }
+
+  parseData(message){
+    var messagesData = message.messages;
+    var msg = messagesData.text;
+    console.log(msg);
+    this.sendBotResponse(msg);
   }
 
   render() {
