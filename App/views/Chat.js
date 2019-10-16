@@ -1,13 +1,50 @@
+/*
+Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
+Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
+Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+*/
+
+//React Dependencies
 import { StyleSheet, Text, View, Button, Platform, Image } from "react-native";
+import React, { Component } from "react";
+//Gifted Chat Dependency
 import { GiftedChat } from "react-native-gifted-chat";
+//Dialog Flow Dependencies
 import { Dialogflow_V2 } from "react-native-dialogflow";
 import { NativeAppEventEmitter } from "react-native";
+//Configurations
+import { dialogflowConfig , firebaseConfig  } from "../env";
+//Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
-import { dialogflowConfig } from "../env";
-import React, { Component } from "react";
 import ImageButton from "../components/ImageButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
+//Yellow Box Dialog Message Dependencies
+import { YellowBox } from 'react-native';
+import _ from 'lodash';
+
+/*
+Handled timer console message and dialog box
+*/
+YellowBox.ignoreWarnings(['Setting a timer']);
+const _console = _.clone(console);
+console.warn = message => {
+  if (message.indexOf('Setting a timer') <= -1) {
+    _console.warn(message);
+  }
+};
+
+/*
+Initializing firebase
+*/
+// Firebase App (the core Firebase SDK) is always required and must be listed before other Firebase SDKs
+const firebase = require("firebase");
+// Add the Firebase products that you want to use
+require("firebase/firestore");
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+//Initialize an instance of Cloud Firestore
+var db = firebase.firestore();
 
 /*
 The user object is the user sending messages — in our case, the bot. 
@@ -83,39 +120,82 @@ export default class Chat extends Component {
 	The GiftedChat component can take props like messages from our component's initial state,
 	an onSend prop that is a callback function used when sending the message, and the user ID of the message.
 	*/
-	onSend(messages = []) {
-		this.setState(previousState => ({
-			messages: GiftedChat.append(previousState.messages, messages)
-		}));
+ 	onSend(messages = []) {
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages)
+    }));
 
-		let message = messages[0].text;
-		/*
-	    The method Dialogflow_V2.requestQuery is used to send a text request to the agent.
-         It contains three parameters:the text itself as the first parameter; in our case 
-         message, the result and error callback functions
-		*/
-		Dialogflow_V2.requestQuery(
-			message,
-			result => this.handleGoogleResponse(result),
-			error => console.log(error)
-		);
+    let message = messages[0].text;
+    /*
+    The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
+    It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
+	  */
+    Dialogflow_V2.requestQuery(
+      message,
+      result => this.handleGoogleResponse(result),
+      error => console.log(error)
+    );
+    if (message.includes("datos")){
+      this.saveMessage(messages[0]);
+      this.getMessage();
+    }
+    else{
+      this.saveMessage(messages[0]);
+    }
+  }
+
+	/*
+    The sendBotResponse function then updates the state of the App component and displays 
+    whatever response back to the user in the chat interface.
+	*/
+	sendBotResponse(text) {
+	let msg = {
+		_id: this.state.messages.length + 1,
+		text,
+		createdAt: new Date(),
+		user: BOT_USER
+	};
+	this.setState(previousState => ({
+		messages: GiftedChat.append(previousState.messages, [msg])
+	}));
+	this.saveMessage(msg);
 	}
 
 	/*
-       The sendBotResponse function then updates the state of the App component and displays 
-       whatever response back to the user in the chat interface.
-	  */
-	sendBotResponse(text) {
-		let msg = {
-			_id: this.state.messages.length + 1,
-			text,
-			createdAt: new Date(),
-			user: BOT_USER
-		};
+	Add data
+	*/
+	saveMessage(msg){
+		db.collection("usersMessages").add({
+		messages: msg
+		})
+		.then(function(docRef) {
+		console.log("Document written with ID: ", docRef.id);
+		})
+		.catch(function(error) {
+		console.error("Error adding document: ", error);
+		});
+	}
 
-		this.setState(previousState => ({
-			messages: GiftedChat.append(previousState.messages, [msg])
-		}));
+	/*
+	Read data
+	*/
+	getMessage(){
+		db.collection('usersMessages').get()
+		.then((snapshot) => {
+		snapshot.forEach((doc) => {
+			this.parseData(doc.data());
+		});
+		})
+		.catch((err) => {
+		console.log('Error getting documents', err);
+		});
+	}
+
+	parseData(message){
+		var messagesData = message.messages;
+		var msg = messagesData.text;
+		console.log(msg);
+		this.sendBotResponse(msg);
 	}
 
 	render() {

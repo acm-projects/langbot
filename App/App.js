@@ -1,5 +1,3 @@
-//Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
-
 import Settings from "./views/Settings";
 import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
