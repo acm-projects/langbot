@@ -24,8 +24,10 @@ export class ChatMessage {
      * @returns a `ChatMessage` with the same fields as the data object passed in
      */
     static createChatMessageFromData(data) {
-        console.log("creating message from data and id is " + data._id);
-        return new ChatMessage(data._id, data.text, data.createdAt, data.user);
+        console.log("creating chat message from: ", data);
+        let date = new Date(data.createdAt.seconds * 1000);
+        console.log("created date: ", date);
+        return new ChatMessage(data._id, data.text, date, data.user);
     }
 
     /**
@@ -33,10 +35,11 @@ export class ChatMessage {
      * @returns an object with the same data as the `ChatMessage` that can be saved to the database or displayed in Gifted Chat
      */
     toDataObject() {
+        console.log("ChatMessage.toDataObject() - this.createdAt = ", this.createdAt);
         return {
             _id: this._id,
             text: this.text,
-            createdAt: this.createdAt,
+            createdAt: this.createdAt.seconds * 1000,
             user: this.user
         }
     }

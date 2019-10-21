@@ -7,7 +7,7 @@
   <component name="ChangeListManager">
     <list default="true" id="23ee78c6-c2c5-441e-84af-1278fbe9f042" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ChatHistory.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ChatMessage.js" beforeDir="false" afterPath="$PROJECT_DIR$/../ChatMessage.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../User.js" beforeDir="false" afterPath="$PROJECT_DIR$/../User.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
@@ -32,8 +32,8 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="76" />
-    <option name="y" value="22" />
+    <option name="x" value="75" />
+    <option name="y" value="20" />
     <option name="width" value="1750" />
     <option name="height" value="980" />
   </component>
@@ -43,9 +43,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane" />
       <pane id="Scope" />
       <pane id="PackagesPane" />
-      <pane id="ProjectPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -143,7 +143,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="61" y="18" width="1400" height="784" extended-state="0" />
+    <frame x="60" y="16" width="1400" height="784" extended-state="0" />
     <layout>
       <window_info id="Captures" order="0" side_tool="true" weight="0.25" />
       <window_info id="Capture Tool" order="1" />

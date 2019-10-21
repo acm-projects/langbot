@@ -58,34 +58,29 @@ class App extends Component {
 
     // if there isn't a user already, create one
     // (this will later be replaced by actual user auth)
-    if (user == undefined) {
-      this.loadInMessages();
-    }
-
+    this.loadInMessages();
   }
 
   async loadInMessages() {
     let user = await this.createUser();
     // now that we have the user, load in the messages
     let introMessages = user.getMessageCollection(db, "01_intro");
-    
-    // see if the first message from the bot has been sent
-    introMessages.where("_id", "==", 0).get().then(snapshot => {
-      // if the user doesn't have a conversation with the first bot
-      if (snapshot.empty) {
-        console.log("there's no convo yet");
-        // send the first message
-        this.setState(previousState => {
-          messages: GiftedChat.append(previousState.messages, [DEFAULT_MESSAGE])
-        });
-      } else {
-        console.log("loading in the conversation...");
-        // load in previous messages from the database
-        this.setState(previousState => {
-          messages: GiftedChat.append(previousState.messages, this.getMessagesFromDatabase(introMessages))
-        });
-      }
-    });
+
+    if (introMessages == undefined) {
+      console.log("there's no convo yet");
+      // send the first message
+      this.setState(previousState => {
+        messages: GiftedChat.append(previousState.messages, [DEFAULT_MESSAGE])
+      });
+    } else {
+      console.log("loading in the conversation...");
+      // load in previous messages from the database
+      let dbMessages = await this.getMessagesFromDatabase(introMessages);
+      //console.log(dbMessages);
+      this.setState(previousState => {
+        messages: GiftedChat.append(previousState.messages, dbMessages)
+      });
+    }
   }
 
   /**
@@ -93,19 +88,18 @@ class App extends Component {
    * @param {firebase.firestore.CollectionReference} messageCollection the collection of messages
    * @returns an array of message objects for Gifted Chat
    */
-  getMessagesFromDatabase(messageCollection) {
+  async getMessagesFromDatabase(messageCollection) {
     let messages = [];
 
-    messageCollection.get().then(snapshot => {
-      snapshot.forEach(msgDoc => {
-        // create a ChatMessage with data from the message in the db
-        let msgObj = ChatMessage.createChatMessageFromData(msgDoc.data());
-        // save a data obj for Gifted Chat to display
-        messages.append(msgObj.toDataObject());
-      })
+    let snapshot = await messageCollection.get();
+    snapshot.forEach(msgDoc => {
+      // create a ChatMessage with data from the message in the db
+      let msgObj = ChatMessage.createChatMessageFromData(msgDoc.data());
+      // save a data obj for Gifted Chat to display
+      messages.push(msgObj.toDataObject());
     });
 
-    console.log("messages in db are " + messages);
+    //console.log("messages in db are ", messages);
 
     return messages;
   }
@@ -123,8 +117,11 @@ class App extends Component {
   an onSend prop that is a callback function used when sending the message, and the user ID of the message.
   */
   onSend(messages = []) {
+    //console.log("we're saving these messagses in onSend: ", messages);
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, messages)
+    }, function() {
+      console.log("STATE VALUE:", this.state.value);
     }));
 
     let messageText = messages[0].text;
@@ -176,7 +173,7 @@ class App extends Component {
     // eventually this will change but for now it's just a constant
     let currentBotID = "01_intro";
     let msgData = msg.toDataObject();
-    console.log(msgData);
+    console.log("message data being saved: ", msgData);
 
     db.collection("users").doc(user.docID) // user
       .collection("conversations").doc(currentBotID) // conversation with intro bot
@@ -216,53 +213,41 @@ class App extends Component {
     // this is for testing purposes to prevent a ton of test users from being created
     user = new User("First", "Last", "TEST_UID", "email@email.email", "avatar-link", 0);
 
-    let userPromise = new Promise((resolve, reject) => {
-      // save it to the database if only it's a new user
-      let userAlreadyExists = false;
+    // save it to the database if only it's a new user
+    let userAlreadyExists = false;
 
-      // save the user if it doesn't already exist
-      if (!userAlreadyExists) {
-        db.collection("users").add({})
-        .then(function(docRef) {
-          console.log("Document written with ID: ", docRef.id);
-          // set the right id
-          docRef.set({
-            docID: docRef.id
-          });
-          user.docID = docRef.id;
-
-          docRef.set(user.toDataObject());
-
-          resolve(user);
-        })
-        .catch(function(error) {
-          console.error("Error adding document: ", error);
-        });
+    // go through the users collection & look for one with the same uid
+    let snapshot = await db.collection("users").get();
+    snapshot.forEach((doc) => {
+      console.log("checking a doc");
+      let data = doc.data();
+      // if the user has a uid that's the same as the temp one we just made
+      if (data.uid == user.uid) {
+        userAlreadyExists = true;
+        console.log("user already exists: " + user.uid);
+        // now we need to get the user from the db and save it for later use
+        user = User.createUserFromObject(data);
+        user.docID = data.docID;
       }
     });
-  
-    return userPromise;
-    // go through the users collection & look for one with the same uid
-    /*db.collection("users").get()
-    .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        let data = doc.data();
-        // if the user has a uid that's the same as the temp one we just made
-        if (data.id == user.docID) {
-          userAlreadyExists = true;
-          console.log("user already exists: " + user.id);
-          // now we need to get the user from the db and save it for later use
-          user = User.createUserFromObject(data);
-          user.docID = data.id;
-        }
-      });
-      
-      
 
-      } else {
-        console.log("Didn't save new user to db because one with the same ID already exists");
-      }
-    });*/
+    // save the user if it doesn't already exist
+    if (!userAlreadyExists) {
+      console.log("the user does not already exist");
+      // add a new user to the db
+      let docRef = await db.collection("users").add({})
+      console.log("Document written with ID: ", docRef.id);
+      // set the right id (for the db & locally)
+      docRef.set({
+        docID: docRef.id
+      });
+      user.docID = docRef.id;
+      // save the user data to firestore
+      docRef.set(user.toDataObject());
+      console.log("about to return the new user");
+    }
+
+    return user;
   }
 
   render() {

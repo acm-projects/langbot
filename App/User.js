@@ -80,9 +80,12 @@ export class User {
      * @returns the collection of messages for the given database and bot id
      */
     getMessageCollection(db, botID) {
-        console.log("trying to get a message collection from the user doc with id " + this.docID);
-        return db.collection("users").doc(this.docID)
-            .collection("conversations").doc(botID)
-            .collection("messages");
+        let convoCollection = db.collection("users").doc(this.docID).collection("conversations");
+        // there may not be any convos yet if we just created a new user
+        if (convoCollection != undefined) {
+            return convoCollection.doc(botID).collection("messages");
+        } else {
+            return undefined;
+        }
     }
 }
