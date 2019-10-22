@@ -65,7 +65,7 @@ class App extends Component {
     let user = await this.createUser();
     // now that we have the user, load in the messages
     let introMessages = user.getMessageCollection(db, "01_intro");
-
+    // TODO!! the second part still runs even if there's no convo yet
     if (!introMessages) {
       console.log("there's no convo yet");
       // send the first message
@@ -90,7 +90,7 @@ class App extends Component {
   async getMessagesFromDatabase(messageCollection) {
     let messages = [];
 
-    let snapshot = await messageCollection.get();
+    let snapshot = await messageCollection.orderBy("createdAt", "desc").get();
     snapshot.forEach(msgDoc => {
       // create a ChatMessage with data from the message in the db
       let msgObj = ChatMessage.createChatMessageFromFirestore(msgDoc.data());
