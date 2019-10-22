@@ -76,7 +76,6 @@ class App extends Component {
       console.log("loading in the conversation...");
       // load in previous messages from the database
       let dbMessages = await this.getMessagesFromDatabase(introMessages);
-      //console.log(dbMessages);
       this.setState(previousState => {
         messages: GiftedChat.append(previousState.messages, dbMessages)
       });
@@ -94,12 +93,10 @@ class App extends Component {
     let snapshot = await messageCollection.get();
     snapshot.forEach(msgDoc => {
       // create a ChatMessage with data from the message in the db
-      let msgObj = ChatMessage.createChatMessageFromData(msgDoc.data());
+      let msgObj = ChatMessage.createChatMessageFromFirestore(msgDoc.data());
       // save a data obj for Gifted Chat to display
       messages.push(msgObj.toDataObject());
     });
-
-    //console.log("messages in db are ", messages);
 
     return messages;
   }
