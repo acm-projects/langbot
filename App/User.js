@@ -82,10 +82,9 @@ export class User {
     getMessageCollection(db, botID) {
         let convoCollection = db.collection("users").doc(this.docID).collection("conversations");
         // there may not be any convos yet if we just created a new user
-        if (convoCollection != undefined) {
+        if (convoCollection) 
             return convoCollection.doc(botID).collection("messages");
-        } else {
+        else
             return undefined;
-        }
     }
 }

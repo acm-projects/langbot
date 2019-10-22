@@ -1,14 +1,14 @@
 //Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 //Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
 
-import React, { Component } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { GiftedChat, Message } from 'react-native-gifted-chat';
-import { Dialogflow_V2 } from 'react-native-dialogflow';
-import { NativeAppEventEmitter } from 'react-native';
-import { dialogflowConfig ,  firebaseConfig  } from './env';
+import React, { Component } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { GiftedChat, Message } from "react-native-gifted-chat";
+import { Dialogflow_V2 } from "react-native-dialogflow";
+import { NativeAppEventEmitter } from "react-native";
+import { dialogflowConfig, firebaseConfig } from "./env";
 import { User } from "./User.js";
-import { ChatMessage } from "./ChatMessage.js"
+import { ChatMessage } from "./ChatMessage.js";
 /*
 Initializing firebase
 */
@@ -28,8 +28,8 @@ The react-native-gifted-chat automatically adds a circle avatar in the UI.
 */
 const BOT_USER = {
   _id: 2,
-  name: 'LangBot',
-  avatar: 'https://imgur.com/jB2SYzV'
+  name: "LangBot",
+  avatar: "https://imgur.com/jB2SYzV"
 };
 
 const DEFAULT_MESSAGE = {
@@ -38,7 +38,7 @@ const DEFAULT_MESSAGE = {
   //The createdAt time will display the current time and date in the chat UI.
   createdAt: new Date(),
   user: BOT_USER
-}
+};
 
 var user;
 
@@ -66,19 +66,19 @@ class App extends Component {
     // now that we have the user, load in the messages
     let introMessages = user.getMessageCollection(db, "01_intro");
 
-    if (introMessages == undefined) {
+    if (!introMessages) {
       console.log("there's no convo yet");
       // send the first message
-      this.setState(previousState => {
+      this.setState(previousState => ({
         messages: GiftedChat.append(previousState.messages, [DEFAULT_MESSAGE])
-      });
+      }));
     } else {
       console.log("loading in the conversation...");
       // load in previous messages from the database
       let dbMessages = await this.getMessagesFromDatabase(introMessages);
-      this.setState(previousState => {
+      this.setState(previousState => ({
         messages: GiftedChat.append(previousState.messages, dbMessages)
-      });
+      }));
     }
   }
 
@@ -115,11 +115,14 @@ class App extends Component {
   */
   onSend(messages = []) {
     //console.log("we're saving these messagses in onSend: ", messages);
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, messages)
-    }, function() {
-      console.log("STATE VALUE:", this.state.value);
-    }));
+    this.setState(
+      previousState => ({
+        messages: GiftedChat.append(previousState.messages, messages)
+      }),
+      () => {
+        console.log("STATE VALUE:", this.state.value);
+      }
+    );
 
     let messageText = messages[0].text;
     console.log(messages[0]);
@@ -147,7 +150,7 @@ class App extends Component {
       new Date(),
       BOT_USER
     );
-    
+
     // update the db
     this.saveMessage(msg);
 
@@ -156,7 +159,7 @@ class App extends Component {
       messages: GiftedChat.append(previousState.messages, [msg.toDataObject()])
     }));
 
-    if (text.includes("datos")){
+    if (text.includes("datos")) {
       this.getMessage();
     }
   }
@@ -172,32 +175,36 @@ class App extends Component {
     let msgData = msg.toDataObject();
     console.log("message data being saved: ", msgData);
 
-    db.collection("users").doc(user.docID) // user
-      .collection("conversations").doc(currentBotID) // conversation with intro bot
-      .collection("messages").add(msgData) // the message collection with that bot
-    .then(function(docRef) {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch(function(error) {
-      console.error("Error adding document: ", error);
-    });
+    db.collection("users")
+      .doc(user.docID) // user
+      .collection("conversations")
+      .doc(currentBotID) // conversation with intro bot
+      .collection("messages")
+      .add(msgData) // the message collection with that bot
+      .then(function(docRef) {
+        console.log("Document written with ID: ", docRef.id);
+      })
+      .catch(function(error) {
+        console.error("Error adding document: ", error);
+      });
     console.log("saved msg to db");
   }
 
   /*
   Read data
   */
-  getMessage(){
-    db.collection('users').get()
-    .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        console.log(doc.id, '=>', doc.data());
-        this.sendBotResponse(doc.id);
+  getMessage() {
+    db.collection("users")
+      .get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          console.log(doc.id, "=>", doc.data());
+          this.sendBotResponse(doc.id);
+        });
+      })
+      .catch(err => {
+        console.log("Error getting documents", err);
       });
-    })
-    .catch((err) => {
-      console.log('Error getting documents', err);
-    });
   }
 
   /**
@@ -208,14 +215,21 @@ class App extends Component {
     // use default values
     // later, we'll generate an actual uid
     // this is for testing purposes to prevent a ton of test users from being created
-    user = new User("First", "Last", "TEST_UID", "email@email.email", "avatar-link", 0);
+    user = new User(
+      "First",
+      "Last",
+      "TEST_UID",
+      "email@email.email",
+      "avatar-link",
+      0
+    );
 
     // save it to the database if only it's a new user
     let userAlreadyExists = false;
 
     // go through the users collection & look for one with the same uid
     let snapshot = await db.collection("users").get();
-    snapshot.forEach((doc) => {
+    snapshot.forEach(doc => {
       console.log("checking a doc");
       let data = doc.data();
       // if the user has a uid that's the same as the temp one we just made
@@ -232,7 +246,7 @@ class App extends Component {
     if (!userAlreadyExists) {
       console.log("the user does not already exist");
       // add a new user to the db
-      let docRef = await db.collection("users").add({})
+      let docRef = await db.collection("users").add({});
       console.log("Document written with ID: ", docRef.id);
       // set the right id (for the db & locally)
       docRef.set({
@@ -249,8 +263,8 @@ class App extends Component {
 
   render() {
     return (
-    	//The line <View style={{ flex: 1, backgroundColor: '#fff' }}> in the render function shows that you can add your own custom styling along using Gifted Chat's components.
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      //The line <View style={{ flex: 1, backgroundColor: '#fff' }}> in the render function shows that you can add your own custom styling along using Gifted Chat's components.
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
         <GiftedChat
           messages={this.state.messages}
           onSend={messages => this.onSend(messages)}
