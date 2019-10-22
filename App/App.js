@@ -6,19 +6,19 @@ import Chat from "./views/Chat";
 import Languages from "./views/Languages";
 
 const navigate = createStackNavigator(
-	{
-		Chat: Chat,
-		Settings: Settings,
-		Languages: Languages
-	},
-	{
-		initialRouteName: "Chat"
-	}
+  {
+    Chat: Chat,
+    Settings: Settings,
+    Languages: Languages
+  },
+  {
+    initialRouteName: "Chat"
+  }
 );
 
 const Contain = createAppContainer(navigate);
 export default class App extends Component {
-	render() {
-		return <Contain />;
-	}
+  render() {
+    return <Contain />;
+  }
 }
