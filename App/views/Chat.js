@@ -12,6 +12,8 @@ import { GiftedChat } from "react-native-gifted-chat";
 //Dialog Flow Dependencies
 import { Dialogflow_V2 } from "react-native-dialogflow";
 import { NativeAppEventEmitter } from "react-native";
+import { User } from "../User.js";
+import { ChatMessage } from "../ChatMessage.js";
 //Configurations
 import { dialogflowConfig, firebaseConfig } from "../env";
 //Front-End Dependencies
@@ -20,10 +22,8 @@ import ImageButton from "../components/ImageButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
-import { YellowBox } from "react-native";
+import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
-import { User } from "../User.js";
-import { ChatMessage } from "../ChatMessage.js";
 
 /*
 Handled timer console message and dialog box
@@ -101,6 +101,13 @@ export default class Chat extends Component {
 
   //A lifecycle method to apply Dialogflow's configuration.
   componentDidMount() {
+    NetInfo.isConnected
+      .fetch()
+      .done(isConnected => this.setState({ isConnected }));
+    NetInfo.isConnected.addEventListener("connectionChange", isConnected =>
+      this.setState({ isConnected })
+    );
+
     Dialogflow_V2.setConfiguration(
       dialogflowConfig.client_email,
       dialogflowConfig.private_key,
@@ -167,15 +174,9 @@ export default class Chat extends Component {
 	an onSend prop that is a callback function used when sending the message, and the user ID of the message.
 	*/
   onSend(messages = []) {
-    //console.log("we're saving these messagses in onSend: ", messages);
-    this.setState(
-      previousState => ({
-        messages: GiftedChat.append(previousState.messages, messages)
-      }),
-      () => {
-        console.log("STATE VALUE:", this.state.value);
-      }
-    );
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages)
+    }));
 
     let messageText = messages[0].text;
     console.log(messages[0]);
@@ -212,10 +213,6 @@ export default class Chat extends Component {
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, [msg.toDataObject()])
     }));
-
-    if (text.includes("datos")) {
-      this.getMessage();
-    }
   }
 
   /*
