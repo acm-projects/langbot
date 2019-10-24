@@ -161,9 +161,9 @@ export default class Chat extends Component {
   }
 
   /*
-       The function handleGoogleResponse(result) was created to handle the response 
-       coming back and then call the sendBotResponse() function.
-     */
+  The function handleGoogleResponse(result) was created to handle the response 
+  coming back and then call the sendBotResponse() function.
+  */
   handleGoogleResponse(result) {
     let text = result.queryResult.fulfillmentMessages[0].text.text[0];
     this.sendBotResponse(text);
@@ -308,13 +308,6 @@ export default class Chat extends Component {
     }
 
     return user;
-  }
-
-  parseData(message) {
-    var messagesData = message.messages;
-    var msg = messagesData.text;
-    console.log(msg);
-    this.sendBotResponse(msg);
   }
 
   render() {
