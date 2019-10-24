@@ -4,7 +4,6 @@ import { Image, View } from "react-native";
 
 export default class ImageButton extends React.Component {
 	render() {
-		console.log(this.props.style);
 		return (
 			<TouchableOpacity onPress={this.props.onPress}>
 				<Image
