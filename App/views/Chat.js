@@ -24,6 +24,8 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
+// text to speech
+import * as Speech from "expo-speech";
 
 /*
 Handled timer console message and dialog box
@@ -213,6 +215,11 @@ export default class Chat extends Component {
     this.setState(previousState => ({
       messages: GiftedChat.append(previousState.messages, [msg.toDataObject()])
     }));
+
+    // speak it!
+    Speech.speak(text, {
+      language: "es-ES"
+    });
   }
 
   /*
