@@ -26,6 +26,8 @@ import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
 // text to speech
 import * as Speech from "expo-speech";
+// permissions (for audio recording for speech to text)
+import * as Permissions from "expo-permissions";
 
 /*
 Handled timer console message and dialog box
