@@ -8,6 +8,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "expo": "34.0.1",
     "expo-av": "~6.0.0",
     "firebase": "^7.1.0",

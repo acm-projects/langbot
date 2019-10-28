@@ -43,7 +43,24 @@ class Settings extends Component {
 						}
 					/>
 				) : null}
-				{this.state.show_login ? <LogInFields /> : null}
+				{this.state.show_login ? (
+					<View>
+						<LogInFields />
+						<LButton
+							title="Don't have an account?"
+							style={{
+								backgroundColor: "#0000",
+								padding: 5
+							}}
+							textStyle={{
+								color: "#999"
+							}}
+							onPress={() =>
+								this.props.navigation.navigate("SignUp")
+							}
+						/>
+					</View>
+				) : null}
 			</View>
 		);
 	}
