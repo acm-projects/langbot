@@ -26,8 +26,9 @@ import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
 // text to speech
 import * as Speech from "expo-speech";
-// permissions (for audio recording for speech to text)
+// speech to text
 import * as Permissions from "expo-permissions";
+import { Audio } from "expo-av";
 
 /*
 Handled timer console message and dialog box
@@ -122,6 +123,9 @@ export default class Chat extends Component {
     // if there isn't a user already, create one
     // (this will later be replaced by actual user auth)
     this.loadInMessages();
+
+    // TODO: move this to somewhere after a button press
+    this.startRecording();
   }
 
   async loadInMessages() {
@@ -306,6 +310,63 @@ export default class Chat extends Component {
     }
 
     return user;
+  }
+
+  async startRecording() {
+    // ask user for recording permission
+    const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
+    console.log("audio recording permission: " + status);
+    // stop if we don't have permission
+    if (status !== "granted") return;
+
+    // use this later to update UI
+    this.setState({ isRecording: true });
+
+    // set audio mode
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+      playThroughEarpieceAndroid: true,
+      staysActiveInBackground: true
+    });
+
+    const recordingOptions = {
+      android: {
+        extension: ".m4a",
+        outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+        audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+        sampleRate: 44100,
+        numberOfChannels: 2,
+        bitRate: 128000
+      },
+      ios: {
+        extension: ".wav",
+        audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+        sampleRate: 44100,
+        numberOfChannels: 1,
+        bitRate: 128000,
+        linearPCMBitDepth: 16,
+        linearPCMIsBigEndian: false,
+        linearPCMIsFloat: false
+      }
+    };
+
+    // make a new recording
+    const recording = new Audio.Recording();
+    // prepare recording
+    await recording.prepareToRecordAsync(recordingOptions);
+
+    // check status
+    let recordingStatus = await recording.getStatusAsync();
+    console.log("status: ", recordingStatus);
+
+    console.log("prepared, about to start async");
+    await recording.startAsync();
+    console.log("started async");
+    console.log("URI: " + recording.getURI());
   }
 
   render() {
