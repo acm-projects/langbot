@@ -43,8 +43,6 @@ Initializing Translator
 TranslatorConfiguration.setConfig('Provider_Type', 'Your_API_Key','Target_Language', 'Source_Language');
 */
 TranslatorConfiguration.setConfig(ProviderTypes.Google, googleTranslateConfig,'en','es');
-const translator = TranslatorFactory.createTranslator();
-console.log("Translator Created");
 
 /*
 Initializing firebase
@@ -190,11 +188,6 @@ export default class Chat extends Component {
     let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
     this.saveMessage(messageObj);
 
-    const translator = TranslatorFactory.createTranslator();
-    translator.translate(messageText).then(translated => {
-      console.log(translated);
-    });
-
     /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
 	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -204,6 +197,21 @@ export default class Chat extends Component {
       result => this.handleGoogleResponse(result),
       error => console.log(error)
     );
+
+    /*
+    Main Translation
+    */
+    //Check if message contains "Translate"
+    if(messageText.toLowerCase().includes("translate")){
+      //Extract phrase
+      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
+      //Create Translator
+      const translator = TranslatorFactory.createTranslator();
+      //Translate Phrase
+      translator.translate(toTranslate).then(translated => {
+        this.sendBotResponse(translated);
+    });
+    }
   }
 
   /*
