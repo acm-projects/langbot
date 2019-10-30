@@ -1,7 +1,8 @@
 /*
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
-Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for disabling YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for Translator: https://github.com/danialkalbasi/react-native-power-translator
 */
 
 //React Dependencies
@@ -15,7 +16,7 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import { dialogflowConfig, firebaseConfig } from "../env";
+import { dialogflowConfig, firebaseConfig , googleTranslateConfig } from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
@@ -24,6 +25,8 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
+//Translator Dependencies
+import { PowerTranslator, ProviderTypes, TranslatorConfiguration, TranslatorFactory } from 'react-native-power-translator';
 
 /*
 Handled timer console message and dialog box
@@ -35,6 +38,12 @@ console.warn = message => {
     _console.warn(message);
   }
 };
+
+/*
+Initializing Translator
+TranslatorConfiguration.setConfig('Provider_Type', 'Your_API_Key','Target_Language', 'Source_Language');
+*/
+TranslatorConfiguration.setConfig(ProviderTypes.Google, googleTranslateConfig,'en','es');
 
 /*
 Initializing firebase
@@ -126,13 +135,11 @@ export default class Chat extends Component {
     let introMessages = user.getMessageCollection(db, "01_intro");
     // TODO!! the second part still runs even if there's no convo yet
     if (!introMessages) {
-      console.log("there's no convo yet");
       // send the first message
       this.setState(previousState => ({
         messages: GiftedChat.append(previousState.messages, [DEFAULT_MESSAGE])
       }));
     } else {
-      console.log("loading in the conversation...");
       // load in previous messages from the database
       let dbMessages = await this.getMessagesFromDatabase(introMessages);
       this.setState(previousState => ({
@@ -179,9 +186,9 @@ export default class Chat extends Component {
     }));
 
     let messageText = messages[0].text;
-    console.log(messages[0]);
     let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
     this.saveMessage(messageObj);
+
     /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
 	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -191,6 +198,21 @@ export default class Chat extends Component {
       result => this.handleGoogleResponse(result),
       error => console.log(error)
     );
+
+    /*
+    Main Translation
+    */
+    //Check if message contains "Translate"
+    if(messageText.toLowerCase().includes("translate")){
+      //Extract phrase
+      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
+      //Create Translator
+      const translator = TranslatorFactory.createTranslator();
+      //Translate Phrase
+      translator.translate(toTranslate).then(translated => {
+        this.sendBotResponse(translated);
+    });
+    }
   }
 
   /*
@@ -222,7 +244,6 @@ export default class Chat extends Component {
     // eventually this will change but for now it's just a constant
     let currentBotID = "01_intro";
     let msgData = msg.toDataObject();
-    console.log("message data being saved: ", msgData);
 
     db.collection("users")
       .doc(user.docID) // user
@@ -236,7 +257,6 @@ export default class Chat extends Component {
       .catch(function(error) {
         console.error("Error adding document: ", error);
       });
-    console.log("saved msg to db");
   }
 
   /*
@@ -247,7 +267,6 @@ export default class Chat extends Component {
       .get()
       .then(snapshot => {
         snapshot.forEach(doc => {
-          console.log(doc.id, "=>", doc.data());
           this.sendBotResponse(doc.id);
         });
       })
@@ -279,12 +298,10 @@ export default class Chat extends Component {
     // go through the users collection & look for one with the same uid
     let snapshot = await db.collection("users").get();
     snapshot.forEach(doc => {
-      console.log("checking a doc");
       let data = doc.data();
       // if the user has a uid that's the same as the temp one we just made
       if (data.uid == user.uid) {
         userAlreadyExists = true;
-        console.log("user already exists: " + user.uid);
         // now we need to get the user from the db and save it for later use
         user = User.createUserFromObject(data);
         user.docID = data.docID;
@@ -293,10 +310,8 @@ export default class Chat extends Component {
 
     // save the user if it doesn't already exist
     if (!userAlreadyExists) {
-      console.log("the user does not already exist");
       // add a new user to the db
       let docRef = await db.collection("users").add({});
-      console.log("Document written with ID: ", docRef.id);
       // set the right id (for the db & locally)
       docRef.set({
         docID: docRef.id
@@ -304,7 +319,6 @@ export default class Chat extends Component {
       user.docID = docRef.id;
       // save the user data to firestore
       docRef.set(user.toDataObject());
-      console.log("about to return the new user");
     }
 
     return user;
