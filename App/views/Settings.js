@@ -28,7 +28,6 @@ class Settings extends Component {
     // get our setting from storage
     let chatMode = await AsyncStorageManager.getValue("chatMode");
     // update the view to match it
-    console.log("setting screen to match chatMode = " + chatMode);
     this.setState({
       selectedOption: chatMode
     });

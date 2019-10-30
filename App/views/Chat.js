@@ -194,12 +194,6 @@ export default class Chat extends Component {
     this.sendBotResponse(text);
   }
 
-  async logSettings() {
-    console.log("getting settings");
-    let chatModeValue = await AsyncStorageManager.getValue("chatMode");
-    console.log(chatModeValue);
-  }
-
   /*
 	The GiftedChat component can take props like messages from our component's initial state,
 	an onSend prop that is a callback function used when sending the message, and the user ID of the message.
@@ -212,11 +206,6 @@ export default class Chat extends Component {
     let messageText = messages[0].text;
     let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
     this.saveMessage(messageObj);
-
-    // temp: if the user asks for settings, log them
-    if (messageText == "settings") {
-      this.logSettings();
-    }
 
     /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
