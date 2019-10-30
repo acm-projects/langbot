@@ -5,7 +5,15 @@ Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/4
 */
 
 //React Dependencies
-import { StyleSheet, Text, View, Button, Platform, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  Platform,
+  Image,
+  AsyncStorage
+} from "react-native";
 import React, { Component } from "react";
 //Gifted Chat Dependency
 import { GiftedChat } from "react-native-gifted-chat";
@@ -29,6 +37,7 @@ import * as Speech from "expo-speech";
 // speech to text
 import * as Permissions from "expo-permissions";
 import { Audio } from "expo-av";
+import AsyncStorageManager from "../AsyncStorageManager.js";
 
 /*
 Handled timer console message and dialog box
@@ -124,8 +133,18 @@ export default class Chat extends Component {
     // (this will later be replaced by actual user auth)
     this.loadInMessages();
 
+    // setup default settings if there aren't any
+    this.initSettings();
+
     // TODO: move this to somewhere after a button press
-    this.startRecording();
+    //this.startRecording();
+  }
+
+  async initSettings() {
+    let chatModeValue = await AsyncStorageManager.getValue("chatMode");
+    if (!chatModeValue) {
+      await AsyncStorageManager.setValue("chatMode", "TEXT");
+    }
   }
 
   async loadInMessages() {
@@ -175,6 +194,12 @@ export default class Chat extends Component {
     this.sendBotResponse(text);
   }
 
+  async logSettings() {
+    console.log("getting settings");
+    let chatModeValue = await AsyncStorageManager.getValue("chatMode");
+    console.log(chatModeValue);
+  }
+
   /*
 	The GiftedChat component can take props like messages from our component's initial state,
 	an onSend prop that is a callback function used when sending the message, and the user ID of the message.
@@ -187,6 +212,12 @@ export default class Chat extends Component {
     let messageText = messages[0].text;
     let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
     this.saveMessage(messageObj);
+
+    // temp: if the user asks for settings, log them
+    if (messageText == "settings") {
+      this.logSettings();
+    }
+
     /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
 	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
