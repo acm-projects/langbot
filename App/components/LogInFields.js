@@ -1,4 +1,4 @@
-import { View, TextInput, Button } from "react-native";
+import { View, Text } from "react-native";
 import React, { Component } from "react";
 import LButton from "./LButton";
 import TextIn from "./TextIn";
@@ -24,9 +24,21 @@ export default class LogInFields extends Component {
 				<LButton
 					title="SUBMIT"
 					onPress={() => {
-						this.props.onSubmit();
+						this.props.onSubmit(
+							this.state.user,
+							this.state.pwd
+						);
 					}}
 				/>
+				{this.props.error ? (
+					<Text
+						style={{
+							color: "#f00"
+						}}
+					>
+						{this.props.error}
+					</Text>
+				) : null}
 			</View>
 		);
 	}
