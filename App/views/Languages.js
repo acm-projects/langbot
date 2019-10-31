@@ -18,6 +18,10 @@ const DATA = [
 	{
 		img: require("../assets/flags/german.png"),
 		id: "DE"
+	},
+	{
+	    img: require("../assets/flags/sweden.png"),
+	    id: "SW"
 	}
 ];
 

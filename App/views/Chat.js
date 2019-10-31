@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View, Button, Platform, Image } from "react-native";
+import { StyleSheet, Text, View, Button, Platform, Image, FlatList } from "react-native";
+import { ListItem } from 'react-native';
 import { GiftedChat } from "react-native-gifted-chat";
 import { Dialogflow_V2 } from "react-native-dialogflow";
 import { NativeAppEventEmitter } from "react-native";
@@ -19,6 +20,68 @@ const BOT_USER = {
 	name: "LangBot",
 	avatar: "https://imgur.com/jB2SYzV"
 };
+
+const DATA = [
+	{
+		img: require("../assets/flags/spain.png"),
+		//text: "Como estas!",
+		id: "ES"
+	}
+];
+
+{/* <view style={styles.title}>
+<Button
+  onPress={() => {
+    alert('You tapped the button!');
+  }}
+  title="Press Me"
+/>
+</view>
+
+const styles = StyleSheet.create({
+	container: {
+	  flex: 1,
+	  marginTop: Constants.statusBarHeight,
+	  marginHorizontal: 16,
+	},
+	title: {
+	  textAlign: 'center',
+	  marginVertical: 8,
+	},
+	fixToText: {
+	  flexDirection: 'row',
+	  justifyContent: 'space-between',
+	},
+	separator: {
+	  marginVertical: 8,
+	  borderBottomColor: '#737373',
+	  borderBottomWidth: StyleSheet.hairlineWidth,
+	},
+  });
+   */}
+
+//    export function RectangleButton(props) {
+// 	const progressSize = props.height / 2;
+  
+// 	return (
+// 	  <ButtonComponent
+// 		{...props}
+// 		shape="rectangle"
+// 		width={props.width}
+// 		height={props.height}
+// 		progressSize={progressSize}
+// 	  />
+// 	);
+//   }
+  
+//   RectangleButton.propTypes = {
+// 	...ButtonComponent.propTypes,
+//   };
+  
+//   RectangleButton.defaultProps = {
+// 	width: null,
+// 	height: 50,
+//   };
 
 export default class Chat extends Component {
 	static navigationOptions = ({ navigation }) => {
@@ -44,7 +107,18 @@ export default class Chat extends Component {
 						navigation.navigate("Languages");
 					}}
 				/>
+			),
+			
+			center: (
+			<Button
+			title="Press me"
+			color="#f194ff"
+			onPress={() => Alert.alert('Button with adjusted color pressed')}
+		  />
+					
 			)
+
+
 		};
 	};
 
@@ -71,7 +145,7 @@ export default class Chat extends Component {
 	}
 
 	/*
-       The function handleGoogleResponse(result) was created to handle the response 
+       The function handleGoogleResponse(result) was created to handle the response
        coming back and then call the sendBotResponse() function.
      */
 	handleGoogleResponse(result) {
@@ -91,7 +165,7 @@ export default class Chat extends Component {
 		let message = messages[0].text;
 		/*
 	    The method Dialogflow_V2.requestQuery is used to send a text request to the agent.
-         It contains three parameters:the text itself as the first parameter; in our case 
+         It contains three parameters:the text itself as the first parameter; in our case
          message, the result and error callback functions
 		*/
 		Dialogflow_V2.requestQuery(
@@ -102,7 +176,7 @@ export default class Chat extends Component {
 	}
 
 	/*
-       The sendBotResponse function then updates the state of the App component and displays 
+       The sendBotResponse function then updates the state of the App component and displays
        whatever response back to the user in the chat interface.
 	  */
 	sendBotResponse(text) {
@@ -122,16 +196,50 @@ export default class Chat extends Component {
 		return (
 			// The line <View style={{ flex: 1, backgroundColor: '#fff' }}> in the render function
 			// shows that you can add your own custom styling along using Gifted Chat's components.
-			<View style={{ flex: 1, backgroundColor: "#fff" }}>
-				<GiftedChat
-					messages={this.state.messages}
-					onSend={messages => this.onSend(messages)}
-					user={{
-						_id: 1
-					}}
-				/>
-				{Platform.OS === "android" ? <KeyboardSpacer /> : null}
+			<View style={styles.container}>
+			    {/* <FlatList
+                					 horizontal={true}
+                					data={DATA}
+                					renderItem={({ item }) => <Item title={item.title} />}
+                                            keyExtractor={item => item.id}
+								/> */}
+				{/* <Button style={styles.myButton}
+				onPress={() => {
+					alert('You tapped the button!');
+				}}
+				title="Press Me"
+				/> */}
+
+<ListItem
+  leftAvatar={{
+    title: name[0],
+    source: { uri:  },
+    showEditButton: true,
+  }}
+  title={LangBot}
+  subtitle={Messenger}
+  chevron
+/>;
+
 			</View>
 		);
 	}
 }
+
+const styles = StyleSheet.create({
+	text:{
+	  color:'white'
+	  },
+	container: {
+	  flex: 1,
+	  paddingTop: 20,
+	  //justifyContent: 'center',
+	  //alignItems: 'center',
+	  backgroundColor: '#32CD32',
+	},
+	myButton:{
+	  paddingHorizontal:50,
+	  paddingVertical:30,
+	  backgroundColor:'#640d67',
+	}
+  });
