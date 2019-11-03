@@ -25,8 +25,6 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
-//Translator Dependencies
-import { PowerTranslator, ProviderTypes, TranslatorConfiguration, TranslatorFactory } from 'react-native-power-translator';
 
 /*
 Handled timer console message and dialog box
@@ -38,12 +36,6 @@ console.warn = message => {
     _console.warn(message);
   }
 };
-
-/*
-Initializing Translator
-TranslatorConfiguration.setConfig('Provider_Type', 'Your_API_Key','Target_Language', 'Source_Language');
-*/
-TranslatorConfiguration.setConfig(ProviderTypes.Google, googleTranslateConfig,'en','es');
 
 /*
 Initializing firebase
@@ -198,21 +190,6 @@ export default class Chat extends Component {
       result => this.handleGoogleResponse(result),
       error => console.log(error)
     );
-
-    /*
-    Main Translation
-    */
-    //Check if message contains "Translate"
-    if(messageText.toLowerCase().includes("translate")){
-      //Extract phrase
-      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
-      //Create Translator
-      const translator = TranslatorFactory.createTranslator();
-      //Translate Phrase
-      translator.translate(toTranslate).then(translated => {
-        this.sendBotResponse(translated);
-    });
-    }
   }
 
   /*
