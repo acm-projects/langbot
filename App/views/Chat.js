@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import React, { Component } from "react";
 //Gifted Chat Dependency
-import { GiftedChat } from "react-native-gifted-chat";
+import { GiftedChat, Composer } from "react-native-gifted-chat";
 //Dialog Flow Dependencies
 import { Dialogflow_V2 } from "react-native-dialogflow";
 import { NativeAppEventEmitter } from "react-native";
@@ -110,7 +110,9 @@ export default class Chat extends Component {
   };
 
   state = {
-    messages: []
+    messages: [],
+    isRecording: false,
+    chatMode: "TEXT"
   };
 
   //A lifecycle method to apply Dialogflow's configuration.
@@ -136,15 +138,32 @@ export default class Chat extends Component {
     // setup default settings if there aren't any
     this.initSettings();
 
-    // TODO: move this to somewhere after a button press
-    //this.startRecording();
+    // setup a listener
+    this.props.navigation.addListener(
+      "willFocus",
+      this.refreshSettings.bind(this)
+    );
+  }
+
+  // need to update the chatmode when the screen is refreshed
+  async refreshSettings() {
+    let chatModeValue = await AsyncStorageManager.getValue("chatMode");
+    this.setState({
+      chatMode: chatModeValue
+    });
   }
 
   async initSettings() {
+    // set to text mode by default if there isn't anything in storage already
     let chatModeValue = await AsyncStorageManager.getValue("chatMode");
     if (!chatModeValue) {
       await AsyncStorageManager.setValue("chatMode", "TEXT");
     }
+
+    // keep track of it
+    this.setState({
+      chatMode: chatModeValue
+    });
   }
 
   async loadInMessages() {
@@ -332,6 +351,14 @@ export default class Chat extends Component {
     return user;
   }
 
+  async toggleRecording() {
+    if (this.state.isRecording) {
+      await this.startRecording();
+    } else {
+      await this.stopRecording();
+    }
+  }
+
   async startRecording() {
     // ask user for recording permission
     const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
@@ -387,6 +414,23 @@ export default class Chat extends Component {
     await recording.startAsync();
     console.log("started async");
     console.log("URI: " + recording.getURI());
+
+    // show that it's recording
+  }
+
+  async stopRecording() {
+    console.log("stopping recording");
+    this.setState({
+      isRecording: false
+    });
+  }
+
+  renderIfTextMode() {
+    if (this.state.chatMode === "SPEECH") {
+      return null;
+    } else {
+      return <Composer />;
+    }
   }
 
   render() {
@@ -400,8 +444,15 @@ export default class Chat extends Component {
           user={{
             _id: 1
           }}
+          renderComposer={this.renderIfTextMode.bind(this)}
         />
         {Platform.OS === "android" ? <KeyboardSpacer /> : null}
+        {this.state.chatMode === "SPEECH" ? (
+          <Button
+            title={this.state.isRecording ? "Recording..." : " Press to record"}
+            onPress={this.toggleRecording.bind(this)}
+          />
+        ) : null}
       </View>
     );
   }
