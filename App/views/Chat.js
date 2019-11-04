@@ -1,8 +1,7 @@
 /*
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
-Source for disabling YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
-Source for Translator: https://github.com/danialkalbasi/react-native-power-translator
+Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
 */
 
 //React Dependencies
