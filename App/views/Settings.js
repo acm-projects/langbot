@@ -3,6 +3,9 @@ import React, { Component } from "react";
 import { SegmentedControls } from "react-native-radio-buttons";
 import LogInFields from "../components/LogInFields";
 import LButton from "../components/LButton";
+import Chat from "./Chat";
+import { salt_rounds } from "../env";
+import bcrypt from "../modified_modules/bcryptjs";
 
 const setSelectedOption = item => console.log(item);
 
@@ -45,7 +48,46 @@ class Settings extends Component {
 				) : null}
 				{this.state.show_login ? (
 					<View>
-						<LogInFields />
+						<LogInFields
+							onSubmit={(user, pwd) => {
+								console.log(this.state.error);
+								console.log("signing in...");
+								let doct;
+								Chat.findUser(user)
+									.then(doc => {
+										doct = doc;
+										console.log("found user");
+										console.log(doc);
+										if (!doc)
+											return this.setState({
+												error:
+													"Username not found"
+											});
+										return bcrypt.compare(
+											pwd,
+											doc.pwd
+										);
+									})
+									.then(result => {
+										if (!result)
+											return this.setState({
+												error:
+													"Invalid Password"
+											});
+										console.log(
+											this.props.navigation
+												.state.params
+										);
+										this.props.navigation.getParam(
+											"sign_in"
+										)(doct);
+										console.log("DONE");
+										this.props.navigation.goBack();
+									})
+									.catch(err => console.error(err));
+							}}
+							error={this.state.error}
+						/>
 						<LButton
 							title="Don't have an account?"
 							style={{

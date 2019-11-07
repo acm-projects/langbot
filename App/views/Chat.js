@@ -19,8 +19,6 @@ import { dialogflowConfig, firebaseConfig } from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
@@ -79,7 +77,9 @@ export default class Chat extends Component {
 					style={{ width: 40, marginRight: 5 }}
 					source={require("../assets/settings.png")}
 					onPress={() => {
-						navigation.navigate("Settings");
+						navigation.navigate("Settings", {
+							sign_in: navigation.getParam("sign_in")
+						});
 					}}
 				/>
 			),
@@ -100,7 +100,8 @@ export default class Chat extends Component {
 	};
 
 	state = {
-		messages: []
+		messages: [],
+		login: null
 	};
 
 	//A lifecycle method to apply Dialogflow's configuration.
@@ -123,6 +124,12 @@ export default class Chat extends Component {
 		// if there isn't a user already, create one
 		// (this will later be replaced by actual user auth)
 		this.loadInMessages();
+		this.props.navigation.setParams({
+			sign_in: user => {
+				this.setState({ login: user });
+				console.log("SIGNED IN");
+			}
+		});
 	}
 
 	async loadInMessages() {
@@ -265,6 +272,16 @@ export default class Chat extends Component {
 				.where("uid", "==", user)
 				.get();
 			resolve(k.docs.length > 0);
+		});
+	}
+
+	static findUser(user) {
+		return new Promise(async function(resolve, reject) {
+			let k = await db
+				.collection("users")
+				.where("uid", "==", user)
+				.get();
+			resolve(k.docs[0].data());
 		});
 	}
 

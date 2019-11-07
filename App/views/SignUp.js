@@ -83,6 +83,7 @@ export default class SignUp extends Component {
 									pwd: hash
 								})
 							)
+							.then(user => this.props.navigation.goBack())
 							.catch(err => console.log(err));
 					}}
 					error={this.state.error}
