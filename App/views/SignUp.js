@@ -4,7 +4,7 @@ import TextIn from "../components/TextIn";
 import { View } from "react-native";
 import { salt_rounds } from "../env";
 import bcrypt from "../modified_modules/bcryptjs";
-import isaac from "isaac";
+import Chat from "./Chat";
 
 export default class SignUp extends Component {
 	state = {
@@ -46,23 +46,36 @@ export default class SignUp extends Component {
 							});
 							return;
 						}
+						if (!this.state.first) {
+							this.setState({
+								error: "No First Name Provided"
+							});
+							return;
+						}
+						if (!this.state.last) {
+							this.setState({
+								error: "No Last Name Provided"
+							});
+							return;
+						}
 						if (this.state.rpwd != pwd) {
 							this.setState({
 								error: "Passwords Do Not Match"
 							});
 							return;
 						}
-						bcrypt.setRandomFallback(len =>
-							new Uint8Array(len).map(() =>
-								Math.floor(isaac.random() * 256)
-							)
-						);
 						bcrypt
 							.genSalt(salt_rounds)
 							.then(salt => bcrypt.hash(pwd, salt))
-							.then(hash => {
-								console.log(hash);
-							})
+							.then(hash =>
+								Chat.createUser({
+									first: this.state.first,
+									last: this.state.last,
+									id: user,
+									email: this.state.email,
+									pwd: hash
+								})
+							)
 							.catch(err => console.log(err));
 					}}
 					error={this.state.error}
@@ -72,6 +85,18 @@ export default class SignUp extends Component {
 						secureTextEntry={true}
 						onChangeText={text =>
 							this.setState({ rpwd: text })
+						}
+					/>
+					<TextIn
+						placeholder="First Name"
+						onChangeText={text =>
+							this.setState({ first: text })
+						}
+					/>
+					<TextIn
+						placeholder="Last Name"
+						onChangeText={text =>
+							this.setState({ last: text })
 						}
 					/>
 					<TextIn

@@ -54,7 +54,10 @@
      * @type {?function(number):!Array.<number>}
      * @inner
      */
-    var randomFallback = null;
+    var randomFallback = len =>
+    new Uint8Array(len).map(() =>
+        Math.floor(isaac.random() * 256)
+    );
 
     /**
      * Generates cryptographically secure random bytes.
@@ -86,7 +89,10 @@
     } catch (e) {}
 
     // Default fallback, if any
-    randomFallback = null;
+    randomFallback = len =>
+    new Uint8Array(len).map(() =>
+        Math.floor(require("isaac").random() * 256)
+    );;
     /**
      * Sets the pseudo random number generator to use as a fallback if neither node's `crypto` module nor the Web Crypto
      *  API is available. Please note: It is highly important that the PRNG used is cryptographically secure and that it
