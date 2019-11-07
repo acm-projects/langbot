@@ -258,6 +258,16 @@ export default class Chat extends Component {
 		console.log("saved msg to db");
 	}
 
+	static existsUser(user) {
+		return new Promise(async function(resolve, reject) {
+			let k = await db
+				.collection("users")
+				.where("uid", "==", user)
+				.get();
+			resolve(k.docs.length > 0);
+		});
+	}
+
 	/**
 	 * createUser()
 	 * Initializes a new user or gets data from the one in the database if it already exists

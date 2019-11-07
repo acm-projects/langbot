@@ -64,8 +64,15 @@ export default class SignUp extends Component {
 							});
 							return;
 						}
-						bcrypt
-							.genSalt(salt_rounds)
+						Chat.existsUser(user)
+							.then(exists => {
+								if (!exists)
+									return bcrypt.genSalt(salt_rounds);
+								this.setState({
+									error: "Username Exists"
+								});
+								throw new Error("Username exists");
+							})
 							.then(salt => bcrypt.hash(pwd, salt))
 							.then(hash =>
 								Chat.createUser({
