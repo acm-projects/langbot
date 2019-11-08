@@ -1,7 +1,8 @@
 /*
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
-Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for disabling YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for Translator: https://github.com/danialkalbasi/react-native-power-translator
 */
 
 //React Dependencies
@@ -15,13 +16,19 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import { dialogflowConfig, firebaseConfig } from "../env";
+import {
+	dialogflowConfig,
+	firebaseConfig,
+	googleTranslateConfig
+} from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
+// text to speech
+import * as Speech from "expo-speech";
 
 /*
 Handled timer console message and dialog box
@@ -214,7 +221,7 @@ export default class Chat extends Component {
 			messageText,
 			result => this.handleGoogleResponse(result),
 			error => console.log(error)
-		);
+		).catch(CATCH);
 	}
 
 	/*
@@ -239,6 +246,11 @@ export default class Chat extends Component {
 				msg.toDataObject()
 			])
 		}));
+
+		// speak it!
+		Speech.speak(text, {
+			language: "es-ES"
+		});
 	}
 
 	/*
@@ -248,7 +260,6 @@ export default class Chat extends Component {
 		// eventually this will change but for now it's just a constant
 		let currentBotID = "01_intro";
 		let msgData = msg.toDataObject();
-		console.log("message data being saved: ", msgData);
 
 		db.collection("users")
 			.doc(user.docID) // user
@@ -257,12 +268,14 @@ export default class Chat extends Component {
 			.collection("messages")
 			.add(msgData) // the message collection with that bot
 			.then(function(docRef) {
-				console.log("Document written with ID: ", docRef.id);
+				console.log(
+					"Message document written with ID: ",
+					docRef.id
+				);
 			})
 			.catch(function(error) {
 				console.error("Error adding document: ", error);
 			});
-		console.log("saved msg to db");
 	}
 
 	static existsUser(user) {
@@ -353,5 +366,21 @@ export default class Chat extends Component {
 				{Platform.OS === "android" ? <KeyboardSpacer /> : null}
 			</View>
 		);
+	}
+
+	/*
+	Read data
+	*/
+	getMessage() {
+		db.collection("users")
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					this.sendBotResponse(doc.id);
+				});
+			})
+			.catch(err => {
+				console.log("Error getting documents", err);
+			});
 	}
 }

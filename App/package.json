@@ -21,6 +21,7 @@
     "events": "^1.0.0",
     "expo": "34.0.1",
     "expo-av": "~6.0.0",
+    "expo-speech": "~6.0.0",
     "firebase": "^7.1.0",
     "https-browserify": "0.0.1",
     "isaac": "^0.0.5",
