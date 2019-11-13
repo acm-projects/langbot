@@ -1,5 +1,4 @@
-import { StyleSheet, Text, View, Button, Platform, Image, FlatList } from "react-native";
-import { ListItem } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform, Image, FlatList, ListItem, } from "react-native";
 import { GiftedChat } from "react-native-gifted-chat";
 import { Dialogflow_V2 } from "react-native-dialogflow";
 import { NativeAppEventEmitter } from "react-native";
@@ -7,8 +6,10 @@ import KeyboardSpacer from "react-native-keyboard-spacer";
 import { dialogflowConfig } from "../env";
 import React, { Component } from "react";
 import ImageButton from "../components/ImageButton";
+import AccountButton from "../components/AccountButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
+//import { Card, ListItem, Button, Icon } from 'react-native-elements'
 
 /*
 The user object is the user sending messages — in our case, the bot. 
@@ -20,6 +21,8 @@ const BOT_USER = {
 	name: "LangBot",
 	avatar: "https://imgur.com/jB2SYzV"
 };
+
+
 
 const DATA = [
 	{
@@ -84,12 +87,20 @@ const styles = StyleSheet.create({
 //   };
 
 export default class Chat extends Component {
-	static navigationOptions = ({ navigation }) => {
+	static navigationOptions = ({ navigation } ) => {
 		return {
+			headerTitle: (
+				<View style=
+				{{marginTop: 1}}>
+				<Text style={{fontSize: 30, fontWeight: 'bold', }}>
+					Mensajes
+				</Text>
+				</View>
+			),
 			headerRight: (
 				<ImageButton
 					style={{ width: 40, marginRight: 5 }}
-					source={require("../assets/settings.png")}
+					source={require("../assets/settingsIcon.png")}
 					onPress={() => {
 						navigation.navigate("Settings");
 					}}
@@ -109,14 +120,14 @@ export default class Chat extends Component {
 				/>
 			),
 			
-			center: (
-			<Button
-			title="Press me"
-			color="#f194ff"
-			onPress={() => Alert.alert('Button with adjusted color pressed')}
-		  />
+		// 	center: (
+		// 	<Button
+		// 	title="Press me"
+		// 	color="#f194ff"
+		// 	onPress={() => Alert.alert('Button with adjusted color pressed')}
+		//   />
 					
-			)
+			// )
 
 
 		};
@@ -196,31 +207,24 @@ export default class Chat extends Component {
 		return (
 			// The line <View style={{ flex: 1, backgroundColor: '#fff' }}> in the render function
 			// shows that you can add your own custom styling along using Gifted Chat's components.
+			// <View style={styles.container}>
+			//     { <FlatList
+            //     					 horizontal={true}
+            //     					data={DATA}
+            //     					renderItem={({ item }) => <Item title={item.title} />}
+            //                                 keyExtractor={item => item.id}
+			// 					/> }
+			// 	{ <Button style={styles.myButton}
+			// 	onPress={() => {
+			// 		alert('You tapped the button!');
+			// 	}}
+			// 	title="Hello"
+			// 	type="outline"
+			// 	/> }		
+			// </View>
 			<View style={styles.container}>
-			    {/* <FlatList
-                					 horizontal={true}
-                					data={DATA}
-                					renderItem={({ item }) => <Item title={item.title} />}
-                                            keyExtractor={item => item.id}
-								/> */}
-				{/* <Button style={styles.myButton}
-				onPress={() => {
-					alert('You tapped the button!');
-				}}
-				title="Press Me"
-				/> */}
-
-<ListItem
-  leftAvatar={{
-    title: name[0],
-    source: { uri:  },
-    showEditButton: true,
-  }}
-  title={LangBot}
-  subtitle={Messenger}
-  chevron
-/>;
-
+			<AccountButton style={styles.containerButton}
+			/>
 			</View>
 		);
 	}
@@ -228,18 +232,41 @@ export default class Chat extends Component {
 
 const styles = StyleSheet.create({
 	text:{
-	  color:'white'
+	  flex: 1,
+	  color:'white',
+	  textAlign: 'center',
+	  justifyContent: 'center'
 	  },
 	container: {
 	  flex: 1,
-	  paddingTop: 20,
+	 // paddingTop: 20,
 	  //justifyContent: 'center',
 	  //alignItems: 'center',
-	  backgroundColor: '#32CD32',
+	  backgroundColor: '#9f9f9f',
+	 // padding: 10,
+	  
+	},	
+	containerButton: {
+		//flex: 1,
+		marginLeft: 1,
+		marginRight: 1,
+		marginTop: 1,
+		marginBottom:1,
+		
+	  //  justifyContent: 'center',
+	   // alignItems: 'center',
+	   //backgroundColor: '#00f2ff',
+	   // padding: 10,
+		
+	  },	
+	title:{
+		fontSize: 25,
+		fontWeight: 'bold',
 	},
 	myButton:{
-	  paddingHorizontal:50,
-	  paddingVertical:30,
-	  backgroundColor:'#640d67',
+	  paddingHorizontal:100,
+	  paddingVertical:10,
+	  color:'#640d67',
+	  opacity: 0.5,
 	}
   });
