@@ -15,7 +15,7 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import { dialogflowConfig, firebaseConfig , googleTranslateConfig } from "../env";
+import { dialogflowConfig, firebaseConfig , googleTranslateConfig} from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
@@ -24,6 +24,8 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
+import { PowerTranslator, ProviderTypes, TranslatorConfiguration, TranslatorFactory } from 'react-native-power-translator';
+
 
 /*
 Handled timer console message and dialog box
@@ -181,6 +183,29 @@ export default class Chat extends Component {
     this.saveMessage(messageObj);
 
     /*
+    Main Translation
+    */
+    //Check if message contains "Translate"
+    if(messageText.toLowerCase().includes("translate")){
+      //Extract phrase
+      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
+      console.log(toTranslate);
+      
+      var request = new XMLHttpRequest();
+      var translated = '';
+      url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + toTranslate +' &target=en';
+      request.open('GET', url, true)
+      request.send();
+      request.onload = function() {
+        // Begin accessing JSON data here
+        var data = JSON.parse(this.response);
+        translated = data.data.translations[0].translatedText;
+        console.log(translated);
+        this.sendBotResponse(translated);
+      }
+    }
+
+    /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
 	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
 		*/
@@ -189,15 +214,6 @@ export default class Chat extends Component {
       result => this.handleGoogleResponse(result),
       error => console.log(error)
     );
-
-    /*
-    Main Translation
-    */
-    //Check if message contains "Translate"
-    if(messageText.toLowerCase().includes("translate")){
-      //Extract phrase
-      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
-    }
   }
 
   /*
