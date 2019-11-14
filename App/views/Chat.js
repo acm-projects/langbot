@@ -2,6 +2,7 @@
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
 Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for API Handling: https://medium.com/better-programming/handling-api-like-a-boss-in-react-native-364abd92dc3d
 */
 
 //React Dependencies
@@ -190,30 +191,32 @@ export default class Chat extends Component {
       //Extract phrase
       let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
       console.log(toTranslate);
-      
-      var request = new XMLHttpRequest();
-      var translated = '';
-      url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + toTranslate +' &target=en';
-      request.open('GET', url, true)
-      request.send();
-      request.onload = function() {
-        // Begin accessing JSON data here
-        var data = JSON.parse(this.response);
-        translated = data.data.translations[0].translatedText;
-        console.log(translated);
-        this.sendBotResponse(translated);
-      }
+      console.log("Translated : " + this.translateText(toTranslate));
     }
+    else{  
+      /*
+      The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
+      It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
+      */
+      Dialogflow_V2.requestQuery(
+        messageText,
+        result => this.handleGoogleResponse(result),
+        error => console.log(error)
+      );
+    }
+  }
 
-    /*
-	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
-	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
-		*/
-    Dialogflow_V2.requestQuery(
-      messageText,
-      result => this.handleGoogleResponse(result),
-      error => console.log(error)
-    );
+  translateText(text){
+    var translated = 'Translated';
+    url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + text +' &target=en';
+    fetch(url)
+    .then(response => response.json())
+    .then((responseJson)=> {
+      translated = responseJson.data.translations[0].translatedText;
+      console.log(translated)
+      this.sendBotResponse(text + " means " + translated);
+    })
+    .catch(error=>console.log(error)) //to catch the errors if any
   }
 
   /*
