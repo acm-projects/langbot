@@ -23,7 +23,7 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import { dialogflowConfig, firebaseConfig } from "../env";
+import { dialogflowConfig, firebaseConfig, CLOUD_FUNCTION_URL } from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
@@ -38,6 +38,7 @@ import * as Speech from "expo-speech";
 import * as Permissions from "expo-permissions";
 import { Audio } from "expo-av";
 import AsyncStorageManager from "../AsyncStorageManager.js";
+import * as FileSystem from "expo-file-system";
 
 /*
 Handled timer console message and dialog box
@@ -143,6 +144,11 @@ export default class Chat extends Component {
       "willFocus",
       this.refreshSettings.bind(this)
     );
+
+    // create & save composer
+    // if we create a new one each render, it doesn't let you type
+    this.composer = <Composer />;
+    console.log("created composer: ", this.composer);
   }
 
   // need to update the chatmode when the screen is refreshed
@@ -353,16 +359,15 @@ export default class Chat extends Component {
 
   async toggleRecording() {
     if (this.state.isRecording) {
-      await this.startRecording();
-    } else {
       await this.stopRecording();
+    } else {
+      await this.startRecording();
     }
   }
 
   async startRecording() {
     // ask user for recording permission
     const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-    console.log("audio recording permission: " + status);
     // stop if we don't have permission
     if (status !== "granted") return;
 
@@ -402,34 +407,62 @@ export default class Chat extends Component {
     };
 
     // make a new recording
-    const recording = new Audio.Recording();
-    // prepare recording
-    await recording.prepareToRecordAsync(recordingOptions);
+    this.recording = new Audio.Recording();
 
-    // check status
-    let recordingStatus = await recording.getStatusAsync();
-    console.log("status: ", recordingStatus);
-
-    console.log("prepared, about to start async");
-    await recording.startAsync();
-    console.log("started async");
-    console.log("URI: " + recording.getURI());
-
-    // show that it's recording
+    try {
+      await this.recording.prepareToRecordAsync(recordingOptions);
+      await this.recording.startAsync();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async stopRecording() {
-    console.log("stopping recording");
     this.setState({
       isRecording: false
     });
+    await this.recording.stopAndUnloadAsync();
+    console.log("saved recording to " + this.recording.getURI());
+    await this.getSpeechTranscription();
+  }
+
+  async getSpeechTranscription() {
+    try {
+      let uri = this.recording.getURI();
+      let base64Data = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64
+      });
+      const formData = new FormData();
+      formData.append("file", {
+        uri,
+        type: "audio/x-wav",
+        name: "langbotUserSpeech"
+        /*data: base64Data*/
+      });
+      console.log(formData);
+      const response = await fetch(CLOUD_FUNCTION_URL, {
+        method: "POST",
+        body: formData
+      });
+      try {
+        const data = await response.json();
+        console.log("got data from google: ", data);
+      } catch (e) {
+        console.log("ERROR: ", e);
+      }
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   renderIfTextMode() {
+    console.log("render check");
     if (this.state.chatMode === "SPEECH") {
       return null;
     } else {
-      return <Composer />;
+      return this.composer;
     }
   }
 
