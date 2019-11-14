@@ -34,9 +34,6 @@ import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
 // text to speech
 import * as Speech from "expo-speech";
-// speech to text
-import * as Permissions from "expo-permissions";
-import { Audio } from "expo-av";
 import AsyncStorageManager from "../AsyncStorageManager.js";
 
 /*
@@ -135,9 +132,6 @@ export default class Chat extends Component {
 
     // setup default settings if there aren't any
     this.initSettings();
-
-    // TODO: move this to somewhere after a button press
-    //this.startRecording();
   }
 
   async initSettings() {
@@ -207,6 +201,16 @@ export default class Chat extends Component {
     let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
     this.saveMessage(messageObj);
 
+    // speak the text if speech mode is on
+    AsyncStorageManager.getValue("chatMode").then(value => {
+      if (value === "SPEECH") {
+        // speak it!
+        Speech.speak(messageText, {
+          language: "es-ES"
+        });
+      }
+    });
+
     /*
 	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
 	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
@@ -239,9 +243,14 @@ export default class Chat extends Component {
       messages: GiftedChat.append(previousState.messages, [msg.toDataObject()])
     }));
 
-    // speak it!
-    Speech.speak(text, {
-      language: "es-ES"
+    // speak the text if speech mode is on
+    AsyncStorageManager.getValue("chatMode").then(value => {
+      if (value === "SPEECH") {
+        // speak it!
+        Speech.speak(text, {
+          language: "es-ES"
+        });
+      }
     });
   }
 
@@ -330,63 +339,6 @@ export default class Chat extends Component {
     }
 
     return user;
-  }
-
-  async startRecording() {
-    // ask user for recording permission
-    const { status } = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-    console.log("audio recording permission: " + status);
-    // stop if we don't have permission
-    if (status !== "granted") return;
-
-    // use this later to update UI
-    this.setState({ isRecording: true });
-
-    // set audio mode
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: true,
-      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-      playsInSilentModeIOS: true,
-      shouldDuckAndroid: true,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-      playThroughEarpieceAndroid: true,
-      staysActiveInBackground: true
-    });
-
-    const recordingOptions = {
-      android: {
-        extension: ".m4a",
-        outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
-        audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
-        sampleRate: 44100,
-        numberOfChannels: 2,
-        bitRate: 128000
-      },
-      ios: {
-        extension: ".wav",
-        audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-        sampleRate: 44100,
-        numberOfChannels: 1,
-        bitRate: 128000,
-        linearPCMBitDepth: 16,
-        linearPCMIsBigEndian: false,
-        linearPCMIsFloat: false
-      }
-    };
-
-    // make a new recording
-    const recording = new Audio.Recording();
-    // prepare recording
-    await recording.prepareToRecordAsync(recordingOptions);
-
-    // check status
-    let recordingStatus = await recording.getStatusAsync();
-    console.log("status: ", recordingStatus);
-
-    console.log("prepared, about to start async");
-    await recording.startAsync();
-    console.log("started async");
-    console.log("URI: " + recording.getURI());
   }
 
   render() {
