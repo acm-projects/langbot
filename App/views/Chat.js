@@ -1,8 +1,8 @@
 /*
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
-Source for disabling YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
-Source for Translator: https://github.com/danialkalbasi/react-native-power-translator
+Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for API Handling: https://medium.com/better-programming/handling-api-like-a-boss-in-react-native-364abd92dc3d
 */
 
 //React Dependencies
@@ -16,11 +16,7 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import {
-	dialogflowConfig,
-	firebaseConfig,
-	googleTranslateConfig
-} from "../env";
+import { dialogflowConfig, firebaseConfig , googleTranslateConfig} from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
@@ -209,22 +205,47 @@ export default class Chat extends Component {
 			messages: GiftedChat.append(previousState.messages, messages)
 		}));
 
-		let messageText = messages[0].text;
-		console.log(messages[0]);
-		let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
-		this.saveMessage(messageObj);
-		/*
-	  The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
-	  It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
-		*/
-		Dialogflow_V2.requestQuery(
-			messageText,
-			result => this.handleGoogleResponse(result),
-			error => console.log(error)
-		).catch(CATCH);
-	}
+    let messageText = messages[0].text;
+    let messageObj = ChatMessage.createChatMessageFromData(messages[0]);
+    this.saveMessage(messageObj);
 
-	/*
+    /*
+    Main Translation
+    */
+    //Check if message contains "Translate"
+    if(messageText.toLowerCase().includes("translate")){
+      //Extract phrase
+      let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
+      console.log(toTranslate);
+      console.log("Translated : " + this.translateText(toTranslate));
+    }
+    else{  
+      /*
+      The method Dialogflow_V2.requestQuery is used to send a text request to the agent. 
+      It contains three parameters:the text itself as the first parameter; in our case message, the result and error callback functions
+      */
+      Dialogflow_V2.requestQuery(
+        messageText,
+        result => this.handleGoogleResponse(result),
+        error => console.log(error)
+      );
+    }
+  }
+
+  translateText(text){
+    var translated = 'Translated';
+    url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + text +' &target=en';
+    fetch(url)
+    .then(response => response.json())
+    .then((responseJson)=> {
+      translated = responseJson.data.translations[0].translatedText;
+      console.log(translated)
+      this.sendBotResponse(text + " means " + translated);
+    })
+    .catch(error=>console.log(error)) //to catch the errors if any
+  }
+
+  /*
     The sendBotResponse function then updates the state of the App component and displays 
     whatever response back to the user in the chat interface.
 	*/
