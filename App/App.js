@@ -4,21 +4,23 @@ import { createStackNavigator } from "react-navigation-stack";
 import React, { Component } from "react";
 import Chat from "./views/Chat";
 import Languages from "./views/Languages";
+import SignUp from "./views/SignUp";
 
 const navigate = createStackNavigator(
-  {
-    Chat: Chat,
-    Settings: Settings,
-    Languages: Languages
-  },
-  {
-    initialRouteName: "Chat"
-  }
+	{
+		Chat,
+		Settings,
+		Languages,
+		SignUp
+	},
+	{
+		initialRouteName: "Chat"
+	}
 );
 
 const Contain = createAppContainer(navigate);
 export default class App extends Component {
-  render() {
-    return <Contain />;
-  }
+	render() {
+		return <Contain />;
+	}
 }
