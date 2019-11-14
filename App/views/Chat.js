@@ -1,7 +1,8 @@
 /*
 Source for integrating Gifted Chat and DialogFlow : https://blog.jscrambler.com/build-a-chatbot-with-dialogflow-and-react-native/
 Source for integrating firestore: https://firebase.google.com/docs/firestore/quickstart
-Source for disabling   YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for disabling YellowBox warnings: https://stackoverflow.com/questions/44603362/setting-a-timer-for-a-long-period-of-time-i-e-multiple-minutes
+Source for Translator: https://github.com/danialkalbasi/react-native-power-translator
 */
 
 //React Dependencies
@@ -23,12 +24,14 @@ import { NativeAppEventEmitter } from "react-native";
 import { User } from "../User.js";
 import { ChatMessage } from "../ChatMessage.js";
 //Configurations
-import { dialogflowConfig, firebaseConfig } from "../env";
+import {
+  dialogflowConfig,
+  firebaseConfig,
+  googleTranslateConfig
+} from "../env";
 //Front-End Dependencies
 import KeyboardSpacer from "react-native-keyboard-spacer";
 import ImageButton from "../components/ImageButton";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
 //Yellow Box Dialog Message Dependencies
 import { YellowBox, NetInfo } from "react-native";
 import _ from "lodash";
@@ -45,6 +48,10 @@ console.warn = message => {
   if (message.indexOf("Setting a timer") <= -1) {
     _console.warn(message);
   }
+};
+
+const CATCH = err => {
+  throw err;
 };
 
 /*
@@ -86,7 +93,9 @@ export default class Chat extends Component {
           style={{ width: 40, marginRight: 5 }}
           source={require("../assets/settings.png")}
           onPress={() => {
-            navigation.navigate("Settings");
+            navigation.navigate("Settings", {
+              sign_in: navigation.getParam("sign_in")
+            });
           }}
         />
       ),
@@ -107,7 +116,8 @@ export default class Chat extends Component {
   };
 
   state = {
-    messages: []
+    messages: [],
+    login: null
   };
 
   //A lifecycle method to apply Dialogflow's configuration.
@@ -129,6 +139,12 @@ export default class Chat extends Component {
     // if there isn't a user already, create one
     // (this will later be replaced by actual user auth)
     this.loadInMessages();
+    this.props.navigation.setParams({
+      sign_in: user => {
+        this.setState({ login: user });
+        console.log("SIGNED IN");
+      }
+    });
 
     // setup default settings if there aren't any
     this.initSettings();
@@ -142,18 +158,21 @@ export default class Chat extends Component {
   }
 
   async loadInMessages() {
-    let user = await this.createUser();
+    let user = await Chat.createUser().catch(CATCH);
     // now that we have the user, load in the messages
     let introMessages = user.getMessageCollection(db, "01_intro");
     // TODO!! the second part still runs even if there's no convo yet
     if (!introMessages) {
+      console.log("there's no convo yet");
       // send the first message
       this.setState(previousState => ({
         messages: GiftedChat.append(previousState.messages, [DEFAULT_MESSAGE])
       }));
     } else {
+      console.log("loading in the conversation...");
       // load in previous messages from the database
       let dbMessages = await this.getMessagesFromDatabase(introMessages);
+      console.log("done loading in the conversation...");
       this.setState(previousState => ({
         messages: GiftedChat.append(previousState.messages, dbMessages)
       }));
@@ -219,7 +238,7 @@ export default class Chat extends Component {
       messageText,
       result => this.handleGoogleResponse(result),
       error => console.log(error)
-    );
+    ).catch(CATCH);
   }
 
   /*
@@ -276,69 +295,76 @@ export default class Chat extends Component {
       });
   }
 
-  /*
-	Read data
-	*/
-  getMessage() {
-    db.collection("users")
-      .get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          this.sendBotResponse(doc.id);
-        });
-      })
-      .catch(err => {
-        console.log("Error getting documents", err);
-      });
+  static existsUser(user) {
+    return new Promise(async function(resolve, reject) {
+      let k = await db
+        .collection("users")
+        .where("uid", "==", user)
+        .get();
+      resolve(k.docs.length > 0);
+    });
+  }
+
+  static findUser(user) {
+    return new Promise(async function(resolve, reject) {
+      let k = await db
+        .collection("users")
+        .where("uid", "==", user)
+        .get();
+      resolve(k.docs[0].data());
+    });
   }
 
   /**
    * createUser()
    * Initializes a new user or gets data from the one in the database if it already exists
+   * Accepts Object with first name, last name, email, and avatar_link keys
+   * Has default values for testing
    */
-  async createUser() {
-    // use default values
-    // later, we'll generate an actual uid
-    // this is for testing purposes to prevent a ton of test users from being created
-    user = new User(
-      "First",
-      "Last",
-      "TEST_UID",
-      "email@email.email",
-      "avatar-link",
-      0
-    );
+  static createUser({
+    first = "First",
+    last = "Last",
+    id = "TEST_UID",
+    email = "email@email.email",
+    avatar_link = "avatar-link",
+    pwd = null
+  } = {}) {
+    return new Promise(async function(resolve, reject) {
+      user = new User(first, last, id, email, avatar_link, 0);
 
-    // save it to the database if only it's a new user
-    let userAlreadyExists = false;
-
-    // go through the users collection & look for one with the same uid
-    let snapshot = await db.collection("users").get();
-    snapshot.forEach(doc => {
-      let data = doc.data();
-      // if the user has a uid that's the same as the temp one we just made
-      if (data.uid == user.uid) {
-        userAlreadyExists = true;
-        // now we need to get the user from the db and save it for later use
+      let snapshot = await db
+        .collection("users")
+        .where("uid", "==", id)
+        .get()
+        .catch(CATCH);
+      if (snapshot.docs.length > 1)
+        return reject("Duplicate Users in the Database");
+      else if (snapshot.docs.length == 1) {
+        doc = snapshot.docs[0];
+        let data = doc.data();
+        if (pwd && data.pwd != pwd) return reject("Passwords do not match");
         user = User.createUserFromObject(data);
-        user.docID = data.docID;
+        console.log("user already exists: " + user.uid);
+        // now we need to get the user from the db and save it for later use
+        return resolve(user);
       }
-    });
 
-    // save the user if it doesn't already exist
-    if (!userAlreadyExists) {
+      console.log("the user does not already exist");
       // add a new user to the db
-      let docRef = await db.collection("users").add({});
-      // set the right id (for the db & locally)
-      docRef.set({
-        docID: docRef.id
-      });
-      user.docID = docRef.id;
-      // save the user data to firestore
-      docRef.set(user.toDataObject());
-    }
+      let docRef = await db
+        .collection("users")
+        .add({})
+        .catch(CATCH);
 
-    return user;
+      user.docID = docRef.id;
+
+      // save the user data to firestore
+      await docRef.set(user.toDataObject()).catch(CATCH);
+      await docRef.update({ pwd }).catch(CATCH);
+      console.log("Document written with ID: ", docRef.id);
+
+      return resolve(user);
+    });
   }
 
   render() {
@@ -356,5 +382,21 @@ export default class Chat extends Component {
         {Platform.OS === "android" ? <KeyboardSpacer /> : null}
       </View>
     );
+  }
+
+  /*
+	Read data
+	*/
+  getMessage() {
+    db.collection("users")
+      .get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          this.sendBotResponse(doc.id);
+        });
+      })
+      .catch(err => {
+        console.log("Error getting documents", err);
+      });
   }
 }

@@ -5,11 +5,7 @@
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="No Filters" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23ee78c6-c2c5-441e-84af-1278fbe9f042" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../views/Chat.js" beforeDir="false" afterPath="$PROJECT_DIR$/../views/Chat.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../views/Settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/../views/Settings.js" afterDir="false" />
-    </list>
+    <list default="true" id="23ee78c6-c2c5-441e-84af-1278fbe9f042" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,8 +39,8 @@
     </navigator>
     <panes>
       <pane id="ProjectPane" />
-      <pane id="Scope" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
