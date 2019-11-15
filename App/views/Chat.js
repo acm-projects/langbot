@@ -216,8 +216,8 @@ export default class Chat extends Component {
     if(messageText.toLowerCase().includes("translate")){
       //Extract phrase
       let toTranslate = messageText.substring(messageText.indexOf(" ")+1);
-      console.log(toTranslate);
-      console.log("Translated : " + this.translateText(toTranslate));
+      console.log("To Translate : " + toTranslate);
+      this.detectLanguage(toTranslate);
     }
     else{  
       /*
@@ -232,22 +232,41 @@ export default class Chat extends Component {
     }
   }
 
-  translateText(text){
-    var translated = 'Translated';
-    url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + text +' &target=en';
+  detectLanguage(text){
+    url = 'https://translation.googleapis.com/language/translate/v2/detect?key=' + googleTranslateConfig +'&q=' + text;
+    fetch(url)
+    .then(response => response.json())
+    .then((responseJson)=> {
+      language = responseJson.data.detections[0][0].language;
+	  console.log("Language : " + language);
+	  if (language == 'es')
+	  {
+		this.translateText(text,'en');
+	  }
+	  else
+	  {
+		this.translateText(text,'es');
+	  }
+    })
+    .catch(error=>console.log(error)) //to catch the errors if any
+  }
+
+  translateText(text, target){
+	console.log("Target : " + target);
+    url = 'https://translation.googleapis.com/language/translate/v2?key=' + googleTranslateConfig +'&q=' + text +' &target=' + target;
     fetch(url)
     .then(response => response.json())
     .then((responseJson)=> {
       translated = responseJson.data.translations[0].translatedText;
-      console.log(translated)
+	  console.log("Translated : " + translated);
       this.sendBotResponse(text + " means " + translated);
     })
     .catch(error=>console.log(error)) //to catch the errors if any
   }
 
-  /*
-    The sendBotResponse function then updates the state of the App component and displays 
-    whatever response back to the user in the chat interface.
+  	/*
+	The sendBotResponse function then updates the state of the App component and displays 
+	whatever response back to the user in the chat interface.
 	*/
 	sendBotResponse(text) {
 		// create a new message
